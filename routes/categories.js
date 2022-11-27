@@ -8,7 +8,7 @@ router.get("/", function (req, res) {
   const page = req.query.page || 0;
   const usersPerPage = 2;
   getDb()
-    .collection("users")
+    .collection("categories")
     .find()
     .sort()
     .skip(page * usersPerPage)
@@ -25,7 +25,7 @@ router.get("/", function (req, res) {
 router.get("/:id", (req, res) => {
   if (ObjectId.isValid(req.params.id)) {
     getDb()
-      .collection("users")
+      .collection("categories")
       .findOne({ _id: ObjectId(req.params.id) })
       .then((doc) => {
         res.status(200).json(doc);
@@ -42,7 +42,7 @@ router.post("/add", (req, res) => {
   const category = req.body;
 
   getDb()
-    .collection("users")
+    .collection("categories")
     .insertOne(category)
     .then((result) => {
       res.status(201).json(result);
@@ -55,7 +55,7 @@ router.post("/add", (req, res) => {
 router.delete("/:id", (req, res) => {
   if (ObjectId.isValid(req.params.id)) {
     getDb()
-      .collection("users")
+      .collection("categories")
       .deleteOne({ _id: ObjectId(req.params.id) })
       .then((result) => {
         res.status(200).json(result);
@@ -73,7 +73,7 @@ router.put("/:id", (req, res) => {
 
   if (ObjectId.isValid(req.params.id)) {
     getDb()
-      .collection("users")
+      .collection("categories")
       .updateOne({ _id: ObjectId(req.params.id) }, { $set: updates })
       .then((result) => {
         res.status(200).json(result);

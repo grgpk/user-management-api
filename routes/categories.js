@@ -2,40 +2,30 @@ const express = require("express");
 const { ObjectId } = require("mongodb");
 const router = express.Router();
 const { getDb } = require("../db/db");
+const getCount = require("../db/count");
 
-router.get("/", function (req, res) {
+router.get("/", async function (req, res) {
   // current page
-  const page = req.query.page || 0;
-  const usersPerPage = 2;
+  const page = parseInt(req.query.page) || 0;
+  const limit = 5;
+  let total = await getCount("categories");
   getDb()
     .collection("categories")
     .find()
     .sort()
-    .skip(page * usersPerPage)
-    .limit(usersPerPage)
+    .skip(page * limit)
+    .limit(limit)
     .toArray()
     .then((categories) => {
-      res.status(200).json(categories);
+      if (categories) {
+        res.status(200).json({ categories, total, limit });
+      } else {
+        res.status(200).json([]);
+      }
     })
     .catch((err) => {
       res.status(500).json({ error: "Cannot fetch categories" });
     });
-});
-
-router.get("/:id", (req, res) => {
-  if (ObjectId.isValid(req.params.id)) {
-    getDb()
-      .collection("categories")
-      .findOne({ _id: ObjectId(req.params.id) })
-      .then((doc) => {
-        res.status(200).json(doc);
-      })
-      .catch(() => {
-        res.status(500).json({ error: "Could not fetch the category" });
-      });
-  } else {
-    res.status(500).json({ error: "Not a valid document ID" });
-  }
 });
 
 router.post("/add", (req, res) => {
@@ -68,7 +58,7 @@ router.delete("/:id", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.patch("/:id", (req, res) => {
   const updates = req.body;
 
   if (ObjectId.isValid(req.params.id)) {
@@ -78,8 +68,10 @@ router.put("/:id", (req, res) => {
       .then((result) => {
         res.status(200).json(result);
       })
-      .catch(() => {
-        res.status(500).json({ error: "Could not update the category" });
+      .catch((err) => {
+        res
+          .status(500)
+          .json({ error: "Could not update the category", err: err });
       });
   } else {
     res.status(500).json({ error: "Not a valid document ID" });

@@ -4,15 +4,9 @@ const router = express.Router();
 const { getDb } = require("../db/db");
 
 router.get("/", function (req, res) {
-  // current page
-  const page = req.query.page || 0;
-  const usersPerPage = 2;
   getDb()
     .collection("users")
     .find()
-    .sort({ lastName: 1 })
-    .skip(page * usersPerPage)
-    .limit(usersPerPage)
     .toArray()
     .then((users) => {
       res.status(200).json(users);
@@ -68,7 +62,7 @@ router.delete("/:id", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.patch("/:id", (req, res) => {
   const updates = req.body;
 
   if (ObjectId.isValid(req.params.id)) {

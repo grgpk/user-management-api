@@ -2,40 +2,26 @@ const express = require("express");
 const { ObjectId } = require("mongodb");
 const router = express.Router();
 const { getDb } = require("../db/db");
+const getCount = require("../db/count");
 
-router.get("/", function (req, res) {
+router.get("/", async function (req, res) {
   // current page
   const page = req.query.page || 0;
-  const usersPerPage = 2;
+  const limit = 5;
+  let total = await getCount("userStatuses");
   getDb()
     .collection("userStatuses")
     .find()
     .sort()
-    .skip(page * usersPerPage)
-    .limit(usersPerPage)
+    .skip(page * limit)
+    .limit(limit)
     .toArray()
     .then((statuses) => {
-      res.status(200).json(statuses);
+      res.status(200).json({ statuses, total, limit });
     })
     .catch((err) => {
       res.status(500).json({ error: "Cannot fetch statuses" });
     });
-});
-
-router.get("/:id", (req, res) => {
-  if (ObjectId.isValid(req.params.id)) {
-    getDb()
-      .collection("userStatuses")
-      .findOne({ _id: ObjectId(req.params.id) })
-      .then((doc) => {
-        res.status(200).json(doc);
-      })
-      .catch(() => {
-        res.status(500).json({ error: "Could not fetch the status" });
-      });
-  } else {
-    res.status(500).json({ error: "Not a valid document ID" });
-  }
 });
 
 router.post("/add", (req, res) => {
@@ -68,7 +54,7 @@ router.delete("/:id", (req, res) => {
   }
 });
 
-router.put("/:id", (req, res) => {
+router.patch("/:id", (req, res) => {
   const updates = req.body;
 
   if (ObjectId.isValid(req.params.id)) {

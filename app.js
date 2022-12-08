@@ -3,10 +3,17 @@ const { connnectToDb } = require("./db/db");
 const categoryRouter = require("./routes/categories");
 const userStatusRouter = require("./routes/user-statuses");
 const usersRouter = require("./routes/users");
+const optionsRouter = require("./routes/options");
+const cors = require("cors");
 
 // init app & middleware
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 // db connection
 connnectToDb((err) => {
@@ -23,3 +30,4 @@ connnectToDb((err) => {
 app.use("/users", usersRouter);
 app.use("/statuses", userStatusRouter);
 app.use("/categories", categoryRouter);
+app.use("/options", optionsRouter);
